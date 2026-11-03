@@ -1,0 +1,142 @@
+
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SAFEDRIVE AI - Hệ thống giám sát tài xế</title>
+
+    <link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+
+    <!-- Thanh điều hướng -->
+    <header class="header">
+        <div class="logo">
+            <span class="logo-icon">S</span>
+            <div>
+                <h1>SAFEDRIVE AI</h1>
+                <p>DRIVER FATIGUE MONITORING</p>
+            </div>
+        </div>
+
+        <div class="system-status">
+            <span class="status-dot"></span>
+            Hệ thống sẵn sàng
+        </div>
+    </header>
+
+    <main class="container">
+
+        <!-- Tiêu đề -->
+        <section class="welcome">
+            <div>
+                <h2>Giám sát trạng thái tài xế</h2>
+                <p>
+                    Sử dụng trí tuệ nhân tạo để nhận diện dấu hiệu
+                    buồn ngủ và ngáp trong quá trình lái xe.
+                </p>
+            </div>
+        </section>
+
+        <!-- Khu vực camera và nhận diện -->
+        <section class="monitor-grid">
+
+            <div class="card camera-card">
+                <div class="card-heading">
+                    <h3>Giám sát camera</h3>
+                    <span class="live-label">● CAMERA</span>
+                </div>
+
+                <div id="webcam-container" class="camera-screen">
+                    <div class="camera-placeholder">
+                        <div class="camera-icon">📷</div>
+                        <h3>Camera chưa được khởi động</h3>
+                        <p>Nhấn nút bên dưới để bắt đầu giám sát</p>
+                    </div>
+                </div>
+
+                <div class="camera-actions">
+                    <button id="start-btn" class="btn btn-primary">
+                        Bắt đầu giám sát
+                    </button>
+
+                    <button id="stop-btn" class="btn btn-secondary" disabled>
+                        Dừng giám sát
+                    </button>
+                </div>
+            </div>
+
+            <!-- Trạng thái nhận diện -->
+            <div class="card detection-card">
+                <div class="card-heading">
+                    <h3>Kết quả nhận diện</h3>
+                    <span class="ai-label">AI MONITORING</span>
+                </div>
+
+                <div class="detection-item">
+                    <div class="detection-info">
+                        <span class="detection-icon">👁️</span>
+                        <div>
+                            <h4>Trạng thái mắt</h4>
+                            <p id="eye-status">Đang chờ nhận diện</p>
+                        </div>
+                    </div>
+                    <span id="eye-confidence" class="confidence">--</span>
+                </div>
+
+                <div class="detection-item">
+                    <div class="detection-info">
+                        <span class="detection-icon">🥱</span>
+                        <div>
+                            <h4>Trạng thái ngáp</h4>
+                            <p id="yawn-status">Đang chờ nhận diện</p>
+                        </div>
+                    </div>
+                    <span id="yawn-confidence" class="confidence">--</span>
+                </div>
+
+                <div class="alert-panel" id="alert-box">
+                    <span>🛡️</span>
+                    <div>
+                        <h4>Trạng thái cảnh báo</h4>
+                        <p>Chưa phát hiện dấu hiệu bất thường</p>
+                    </div>
+                </div>
+            </div>
+
+        </section>
+
+        <!-- Nhật ký sự kiện -->
+        <section class="card log-card">
+            <div class="card-heading">
+                <div>
+                    <h3>Nhật ký giám sát</h3>
+                    <p class="sub-heading">
+                        Theo dõi các sự kiện được hệ thống ghi nhận
+                    </p>
+                </div>
+
+                <span class="log-count" id="log-count">0 sự kiện</span>
+            </div>
+
+            <div id="event-log" class="event-log">
+                <p class="empty-log">Chưa có sự kiện nào được ghi nhận.</p>
+            </div>
+        </section>
+
+        <footer>
+            <p>SAFEDRIVE AI © 2026 | Hệ thống hỗ trợ nhận diện dấu hiệu mệt mỏi của tài xế</p>
+            <p class="disclaimer">
+                Đây là sản phẩm thử nghiệm phục vụ mục đích học tập,
+                không thay thế các biện pháp an toàn khi lái xe.
+            </p>
+        </footer>
+
+    </main>
+
+    <script src="script.js"></script>
+
+</body>
+</html>
