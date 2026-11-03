@@ -333,3 +333,10 @@ footer {
     font-weight: 700;
     color: #0d9488;
 }
+.logo-image {
+    width: 150px;
+    height: 150px;
+    object-fit: contain;
+    border-radius: 8px;
+    flex-shrink: 0;
+}

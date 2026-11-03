@@ -48,6 +48,34 @@ function updateCameraStatus(status, message) {
     cameraStatus.textContent = message || config.text;
     cameraStatus.style.color = config.color;
 }
+// ======================================
+// 3.1. XỬ LÝ KHI CAMERA GẶP LỖI
+// ======================================
+
+function handleCameraError(error) {
+    // Đưa hệ thống về trạng thái chưa giám sát
+    setMonitoringState(false);
+
+    // Xác định thông báo theo loại lỗi
+    let message = "Không thể kết nối camera. Vui lòng thử lại.";
+
+    if (error && error.name === "NotAllowedError") {
+        message = "Vui lòng cấp quyền truy cập camera cho website.";
+    } 
+    else if (error && error.name === "NotFoundError") {
+        message = "Không tìm thấy thiết bị camera.";
+    } 
+    else if (error && error.name === "NotReadableError") {
+        message = "Camera đang được sử dụng bởi ứng dụng khác.";
+    }
+
+    // Cập nhật giao diện
+    updateCameraStatus("error", message);
+    showAlert(message, true);
+
+    // Ghi nhận lỗi vào nhật ký
+    addEventLog("Lỗi camera: " + message);
+}
 
 
 // ======================================
@@ -150,14 +178,12 @@ function setMonitoringState(active) {
     stopBtn.disabled = !active;
 
     if (!active) {
-        eyeStatus.textContent = "Đang chờ nhận diện";
-        yawnStatus.textContent = "Đang chờ nhận diện";
+    eyeStatus.textContent = "Đang chờ nhận diện";
+    yawnStatus.textContent = "Đang chờ nhận diện";
 
-        eyeConfidence.textContent = "--";
-        yawnConfidence.textContent = "--";
-
-        updateCameraStatus("idle");
-    }
+    eyeConfidence.textContent = "--";
+    yawnConfidence.textContent = "--";
+}
 }
 
 
@@ -180,12 +206,19 @@ stopBtn.addEventListener("click", function () {
     if (!isMonitoring) return;
 
     setMonitoringState(false);
+    updateCameraStatus("idle");
 
     showAlert("Đã dừng giám sát.");
     addEventLog("Đã dừng giám sát.");
 });
 
+// Nhận dữ liệu nhận diện từ mô hình AI
+function updateDetection(data) {
+    if (!data) return;
 
+    updateEyeStatus(data.eyeClosed, data.eyeConfidence);
+    updateYawnStatus(data.yawn, data.yawnConfidence);
+}
 // ======================================
 // 10. GIAO DIỆN KẾT NỐI DÀNH CHO NGÂN VÀ DIÊU
 // ======================================
@@ -198,9 +231,11 @@ window.SAFEDRIVE = {
     // Dành cho Ngân: cập nhật kết quả AI
     updateEyeStatus,
     updateYawnStatus,
+    updateDetection,
 
     // Dành cho Ngân: báo trạng thái camera
     updateCameraStatus,
+    handleCameraError,
 
     // Dành cho Diêu: xử lý cảnh báo và nhật ký
     showAlert,
