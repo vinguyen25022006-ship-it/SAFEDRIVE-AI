@@ -325,3 +325,11 @@ footer {
         font-size: 21px;
     }
 }
+/* Trạng thái camera */
+.camera-status {
+    margin-top: 18px;
+    padding-left: 2px;
+    font-size: 14px;
+    font-weight: 700;
+    color: #0d9488;
+}

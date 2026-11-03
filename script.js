@@ -6,6 +6,8 @@
 const startBtn = document.getElementById("start-btn");
 const stopBtn = document.getElementById("stop-btn");
 
+const cameraStatus = document.getElementById("camera-status");
+
 const eyeStatus = document.getElementById("eye-status");
 const eyeConfidence = document.getElementById("eye-confidence");
 
@@ -16,24 +18,47 @@ const alertBox = document.getElementById("alert-box");
 const eventLog = document.getElementById("event-log");
 const logCount = document.getElementById("log-count");
 
-// Trạng thái hoạt động của hệ thống
+
+// ======================================
+// 2. TRẠNG THÁI HỆ THỐNG
+// ======================================
+
 let isMonitoring = false;
 let totalEvents = 0;
 
+const MAX_LOGS = 50;
+
 
 // ======================================
-// 2. HÀM GHI NHẬT KÝ SỰ KIỆN
+// 3. CẬP NHẬT TRẠNG THÁI CAMERA
+// ======================================
+
+function updateCameraStatus(status, message) {
+    const statusConfig = {
+        idle: { color: "#64748b", text: "● Camera chưa được khởi động" },
+        connecting: { color: "#d97706", text: "● Đang kết nối camera..." },
+        active: { color: "#0d9488", text: "● Camera đang hoạt động" },
+        error: { color: "#dc2626", text: "● Camera gặp sự cố" }
+    };
+
+    const config = statusConfig[status];
+
+    if (!config) return;
+
+    cameraStatus.textContent = message || config.text;
+    cameraStatus.style.color = config.color;
+}
+
+
+// ======================================
+// 4. GHI NHẬT KÝ SỰ KIỆN
 // ======================================
 
 function addEventLog(message) {
-    // Xóa thông báo khi chưa có sự kiện
-    if (totalEvents === 0) {
+    if (eventLog.querySelector(".empty-log")) {
         eventLog.innerHTML = "";
     }
 
-    totalEvents++;
-
-    // Tạo dòng sự kiện mới
     const eventItem = document.createElement("p");
 
     eventItem.style.padding = "12px 0";
@@ -44,24 +69,27 @@ function addEventLog(message) {
 
     eventItem.textContent = `[${currentTime}] ${message}`;
 
-    // Thêm sự kiện vào đầu danh sách
     eventLog.prepend(eventItem);
 
-    // Cập nhật tổng số sự kiện
+    totalEvents++;
+
+    // Giới hạn số dòng nhật ký
+    while (eventLog.children.length > MAX_LOGS) {
+        eventLog.removeChild(eventLog.lastElementChild);
+    }
+
     logCount.textContent = `${totalEvents} sự kiện`;
 }
 
 
 // ======================================
-// 3. HÀM CẬP NHẬT TRẠNG THÁI MẮT
+// 5. CẬP NHẬT TRẠNG THÁI MẮT
 // ======================================
 
 function updateEyeStatus(isClosed, confidence) {
-    if (isClosed) {
-        eyeStatus.textContent = "Mắt đang nhắm";
-    } else {
-        eyeStatus.textContent = "Mắt đang mở";
-    }
+    eyeStatus.textContent = isClosed
+        ? "Mắt đang nhắm"
+        : "Mắt đang mở";
 
     eyeConfidence.textContent =
         `${(confidence * 100).toFixed(1)}%`;
@@ -69,15 +97,13 @@ function updateEyeStatus(isClosed, confidence) {
 
 
 // ======================================
-// 4. HÀM CẬP NHẬT TRẠNG THÁI NGÁP
+// 6. CẬP NHẬT TRẠNG THÁI NGÁP
 // ======================================
 
 function updateYawnStatus(isYawning, confidence) {
-    if (isYawning) {
-        yawnStatus.textContent = "Đang ngáp";
-    } else {
-        yawnStatus.textContent = "Không ngáp";
-    }
+    yawnStatus.textContent = isYawning
+        ? "Đang ngáp"
+        : "Không ngáp";
 
     yawnConfidence.textContent =
         `${(confidence * 100).toFixed(1)}%`;
@@ -85,84 +111,101 @@ function updateYawnStatus(isYawning, confidence) {
 
 
 // ======================================
-// 5. HÀM HIỂN THỊ CẢNH BÁO
+// 7. HIỂN THỊ CẢNH BÁO
 // ======================================
 
 function showAlert(message, isWarning = false) {
-    alertBox.innerHTML = `
-        <span>${isWarning ? "⚠️" : "🛡️"}</span>
-        <div>
-            <h4>${isWarning ? "Cảnh báo tài xế" : "Trạng thái cảnh báo"}</h4>
-            <p>${message}</p>
-        </div>
-    `;
+    alertBox.innerHTML = "";
 
-    if (isWarning) {
-        alertBox.style.background = "#fef2f2";
-    } else {
-        alertBox.style.background = "#ecfdf5";
+    const icon = document.createElement("span");
+    icon.textContent = isWarning ? "⚠️" : "🛡️";
+
+    const content = document.createElement("div");
+
+    const heading = document.createElement("h4");
+    heading.textContent = isWarning
+        ? "Cảnh báo tài xế"
+        : "Trạng thái cảnh báo";
+
+    const description = document.createElement("p");
+    description.textContent = message;
+
+    content.append(heading, description);
+    alertBox.append(icon, content);
+
+    alertBox.style.background = isWarning
+        ? "#fef2f2"
+        : "#ecfdf5";
+}
+
+
+// ======================================
+// 8. ĐIỀU KHIỂN GIAO DIỆN GIÁM SÁT
+// ======================================
+
+function setMonitoringState(active) {
+    isMonitoring = active;
+
+    startBtn.disabled = active;
+    stopBtn.disabled = !active;
+
+    if (!active) {
+        eyeStatus.textContent = "Đang chờ nhận diện";
+        yawnStatus.textContent = "Đang chờ nhận diện";
+
+        eyeConfidence.textContent = "--";
+        yawnConfidence.textContent = "--";
+
+        updateCameraStatus("idle");
     }
 }
 
 
 // ======================================
-// 6. XỬ LÝ NÚT BẮT ĐẦU GIÁM SÁT
+// 9. XỬ LÝ NÚT BẮT ĐẦU VÀ DỪNG
 // ======================================
 
 startBtn.addEventListener("click", function () {
     if (isMonitoring) return;
 
-    isMonitoring = true;
+    setMonitoringState(true);
 
-    startBtn.disabled = true;
-    stopBtn.disabled = false;
-
-    eyeStatus.textContent = "Đang chờ dữ liệu AI";
-    yawnStatus.textContent = "Đang chờ dữ liệu AI";
-
-    showAlert("Đã yêu cầu bắt đầu giám sát. Đang chờ kết nối camera và AI.");
+    updateCameraStatus("connecting");
+    showAlert("Đang chờ kết nối camera và hệ thống AI.");
 
     addEventLog("Đã yêu cầu bắt đầu giám sát.");
 });
 
-
-// ======================================
-// 7. XỬ LÝ NÚT DỪNG GIÁM SÁT
-// ======================================
-
 stopBtn.addEventListener("click", function () {
     if (!isMonitoring) return;
 
-    isMonitoring = false;
-
-    startBtn.disabled = false;
-    stopBtn.disabled = true;
-
-    eyeStatus.textContent = "Đang chờ nhận diện";
-    yawnStatus.textContent = "Đang chờ nhận diện";
-
-    eyeConfidence.textContent = "--";
-    yawnConfidence.textContent = "--";
+    setMonitoringState(false);
 
     showAlert("Đã dừng giám sát.");
-
     addEventLog("Đã dừng giám sát.");
 });
 
 
 // ======================================
-// 8. CÁC HÀM CHỜ TÍCH HỢP AI VÀ CẢNH BÁO
+// 10. GIAO DIỆN KẾT NỐI DÀNH CHO NGÂN VÀ DIÊU
 // ======================================
 
-// Cung cấp các hàm để Ngân và Diêu có thể sử dụng
 window.SAFEDRIVE = {
+
+    // Trạng thái hệ thống
+    isMonitoring: () => isMonitoring,
+
+    // Dành cho Ngân: cập nhật kết quả AI
     updateEyeStatus,
     updateYawnStatus,
+
+    // Dành cho Ngân: báo trạng thái camera
+    updateCameraStatus,
+
+    // Dành cho Diêu: xử lý cảnh báo và nhật ký
     showAlert,
     addEventLog,
 
-    // Kiểm tra trạng thái giám sát
-    isMonitoring: function () {
-        return isMonitoring;
-    }
+    // Dùng để cập nhật trạng thái giám sát
+    setMonitoringState
 };
